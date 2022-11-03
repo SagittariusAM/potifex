@@ -3,6 +3,7 @@ import requests
 from bs4 import *
 import base64
 import json
+from datafex import *
 
 url = "https://accounts.spotify.com/api/token"
 headers = {}
@@ -22,7 +23,7 @@ r = requests.post(url, headers=headers, data=data)
 
 token = r.json()['access_token']
 
-playlistID = "7oRliYzqtAGvBjs9udWtI2"
+playlistID = input("Input Playlist ID:-")
 playlistURL = f"https://api.spotify.com/v1/playlists/{playlistID}"
 
 headers = {
@@ -31,10 +32,8 @@ headers = {
 
 r = requests.get(url=playlistURL, headers=headers)
 
-print(json.dumps(r.json(), indent=2))
+thestuff = json.dumps(r.json(), indent=2)
+f = open(f"{playlistID}.json", "w")
+f.write(thestuff)
 
-# url = "https://open.spotify.com/playlist/01PstILJGu2ygcj0y2bkGE"
-# spot_r = requests.get(url)
-# spot_soup = BeautifulSoup(spot_r.text, 'html.parser')
-# spot_songs = spot_soup.findAll('a')
-# print(spot_r)
+downloadS(thestuff)
