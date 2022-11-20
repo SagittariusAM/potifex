@@ -3,7 +3,7 @@ import requests
 from bs4 import *
 import base64
 import json
-from datafex import *
+# from datafex import *
 
 url = "https://accounts.spotify.com/api/token"
 headers = {}
@@ -33,7 +33,7 @@ headers = {
 r = requests.get(url=playlistURL, headers=headers)
 
 thestuff = json.dumps(r.json(), indent=2)
-f = open(f"{playlistID}.json", "w")
+f = open(f"thestuff.json", "w")
 f.write(thestuff)
 
-downloadS(thestuff)
+# getS(thestuff)
