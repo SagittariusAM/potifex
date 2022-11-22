@@ -1,9 +1,8 @@
-import os
 import requests
 from bs4 import *
 import base64
 import json
-# from datafex import *
+from datafex import *
 
 url = "https://accounts.spotify.com/api/token"
 headers = {}
@@ -23,17 +22,23 @@ r = requests.post(url, headers=headers, data=data)
 
 token = r.json()['access_token']
 
-playlistID = input("Input Playlist ID:-")
+playlistID = "01PstILJGu2ygcj0y2bkGE" #input("Input Playlist ID:-")
 playlistURL = f"https://api.spotify.com/v1/playlists/{playlistID}"
 
 headers = {
     "Authorization": "Bearer " + token
 }
 
-r = requests.get(url=playlistURL, headers=headers)
+mainData = requests.get(url=playlistURL, headers=headers).json()
+pageURL = mainData["tracks"]["next"]
 
-thestuff = json.dumps(r.json(), indent=2)
-f = open(f"thestuff.json", "w")
-f.write(thestuff)
+while pageURL:
+    print("Paged well")
+    pageRes = requests.get(url=pageURL, headers=headers)
+    for item in pageRes.json()["items"]: (mainData["tracks"]["items"]).append(item)
+    upData = json.dumps(mainData, indent=2)
+    with open(f"{playlistID}.json", "w") as b:
+        b.write(upData)
+    pageURL = pageRes.json()["next"]
 
-# getS(thestuff)
+getS(playlistID)

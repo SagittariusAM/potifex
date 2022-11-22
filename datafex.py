@@ -1,5 +1,4 @@
 from __future__ import unicode_literals
-import os
 import json
 from requests import get
 import yt_dlp
@@ -10,6 +9,42 @@ from metadfex import *
 
 YDL_OPTIONS = {'format': 'bestaudio', 'noplaylist':'True'}
 
+class Song:
+    def __init__(self, sData, datafex):
+        self.id = sData["track"]["id"]
+        self.name = sData["track"]["name"]
+        self.album = sData["track"]["album"]["name"]
+        self.artist = getArtist(sData)
+        self.albumartist = datafex["name"]
+        self.track = sData["track"]["track_number"]
+        self.imageURL = sData["track"]["album"]["images"][0]["url"]
+
+with open("DownloadedList.json", "r") as b:
+    DownloadedList = json.load(b)
+
+# Main function: Gets each song and assigns its attributes.
+def getS(thestuff):
+    with open(f'{thestuff}.json', 'r') as f:
+        datafex = json.load(f)
+    for dictn in datafex["tracks"]["items"]:
+        song = Song(dictn, datafex)
+        fullTitle = f"{song.name} - {song.artist}"
+        if all(fullTitle != track for track in DownloadedList): # Checks for if already exists.
+            print(f"Name: {song.name}\nAlbum: {song.album}\nArtist: {song.artist}")
+            executeS(song)
+            listingS(fullTitle)
+        else:
+            pass
+
+# Organizing function.
+def executeS(song):
+    outS = (song.name).replace("\"", "").replace("?", "").replace("|", "").replace("/", "")
+    idSong = search(f"{song.name} {song.artist}")
+    downloadS(idSong, outS)
+    metadata(song, outS)
+    moveSong(outS)
+
+# Search function from YoutubeDL.
 def search(arg):
     with YoutubeDL(YDL_OPTIONS) as ydl:
         try:
@@ -18,16 +53,18 @@ def search(arg):
             video = ydl.extract_info(f"ytsearch:{arg}", download=False)['entries'][0]
         else:
             video = ydl.extract_info(arg, download=False)
+    idSong = video["id"]
+    tiSong = video["title"]
+    print(f"Downloading: {tiSong}")
+    return idSong
 
-    return video
-
-def downloadS(id, song):
-    outS = song.name + '.%(ext)s'
+# Download from YouTube.
+def downloadS(id, outS):
+    boop = outS + '.%(ext)s'
     ydl_opts = {
         'format': 'bestaudio/best',
         'quality': '0',
-        'outtmpl': outS,
-        # C:/Users/lenovo/Music/iTunes/iTunes Media/Automatically Add to iTunes/
+        'outtmpl': boop,
         'postprocessors': [{
             'key': 'FFmpegExtractAudio',
             'preferredcodec': 'mp3',
@@ -36,39 +73,13 @@ def downloadS(id, song):
     }
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
         ydl.download([f"https://www.youtube.com/watch?v={id}"])
-        
+        print(ydl)
 
-def getS(thestuff):
-    with open(f'{thestuff}.json', 'r') as f:
-        datafex = json.load(f)
-    for dictn in datafex["tracks"]["items"]:
-        try:
-            a2 = dictn["track"]["artists"][1]["name"]
-            a1 = dictn["track"]["artists"][0]["name"]
-            artists = f"{a1} & {a2}"
-        except: 
-            artists = dictn["track"]["artists"][0]["name"]
-        song = Song(dictn, artists, datafex)
-        print(f"Name: {song.name}\nAlbum: {song.album}\nArtist: {song.artist}")
-        # name = (song.name).replace(" ", "+").replace("&", "%26").replace(":", "%3A")
-        # print(f"https://www.youtube.com/results?search_query={name}")
-        m = search(song.name)
-        idSong = m["id"]
-        title = m["title"]
-        # input(f"Proceed to download ? {title}")
-        downloadS(idSong, song)
-        metadata(song)
-        moveSong(song)
+# Add to a downloaded songs list.
+def listingS(fullTitle):
+    DownloadedList.append(fullTitle)
+    upData = json.dumps(DownloadedList, indent=2)
+    with open("DownloadedList.json", "w") as b:
+        b.write(upData)
 
-class Song:
-    def __init__(self, sData, sArtists, datafex):
-        self.id = sData["track"]["id"]
-        self.name = sData["track"]["name"]
-        self.album = sData["track"]["album"]["name"]
-        self.artist = sArtists
-        self.albumartist = datafex["name"]
-        self.track = sData["track"]["track_number"]
-        self.imageURL = sData["track"]["album"]["images"][0]["url"]
-
-
-getS("thestuff")
+getS("01PstILJGu2ygcj0y2bkGE")
