@@ -82,4 +82,9 @@ def listingS(fullTitle):
     with open("DownloadedList.json", "w") as b:
         b.write(upData)
 
-getS("01PstILJGu2ygcj0y2bkGE")
+# Check for more pages and adds them to main json file.
+def checkPage(mainData, headers, pageURL):
+    while pageURL:
+        pageRes = requests.get(url=pageURL, headers=headers)
+        for item in pageRes.json()["items"]: (mainData["tracks"]["items"]).append(item)
+        pageURL = pageRes.json()["next"]

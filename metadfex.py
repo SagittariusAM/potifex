@@ -62,6 +62,23 @@ def metadata(song, outS):
     recentSong.tags.add(TPE1(text=song.artist))
     recentSong.tags.add(TALB(text=song.album))
     recentSong.tags.add(TRCK(text=str(song.track)))
+    for x in range(0,3):
+        try:
+            print(f"[{song.name}]: Getting Lyrics...", end="\r")
+            recentSong.tags.add(USLT(lang='eng', desc='desc', text=getLyrics(song)))
+            print(f"Lyrics Found: {song.name}!", end="\r")
+            break
+        except:
+            print(f"Lyrics Not Found: {song.name}.", end="\r")
+            pass
+
+    recentSong.save()
+
+def moveSong(outS):
+    shutil.move(f'{outS}.mp3', f'C:/Users/lenovo/Music/iTunes/iTunes Media/Automatically Add to iTunes/{outS}.mp3')
+    print("\nMoved to iTunes")
+
+def askLyrics(recentSong, song):
     while True:
         try:
             recentSong.tags.add(USLT(lang='eng', desc='desc', text=getLyrics(song)))
@@ -72,10 +89,3 @@ def metadata(song, outS):
                 pass
             else:
                 break
-
-    recentSong.save()
-
-def moveSong(outS):
-    shutil.move(f'{outS}.mp3', f'C:/Users/lenovo/Music/iTunes/iTunes Media/Automatically Add to iTunes/{outS}.mp3')
-    print("Moved to iTunes")
-

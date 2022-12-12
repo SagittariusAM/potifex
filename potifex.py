@@ -22,7 +22,7 @@ r = requests.post(url, headers=headers, data=data)
 
 token = r.json()['access_token']
 
-playlistID = "01PstILJGu2ygcj0y2bkGE" #input("Input Playlist ID:-")
+playlistID = input("Input Playlist ID:-")
 playlistURL = f"https://api.spotify.com/v1/playlists/{playlistID}"
 
 headers = {
@@ -30,15 +30,13 @@ headers = {
 }
 
 mainData = requests.get(url=playlistURL, headers=headers).json()
+
 pageURL = mainData["tracks"]["next"]
 
-while pageURL:
-    print("Paged well")
-    pageRes = requests.get(url=pageURL, headers=headers)
-    for item in pageRes.json()["items"]: (mainData["tracks"]["items"]).append(item)
-    upData = json.dumps(mainData, indent=2)
-    with open(f"{playlistID}.json", "w") as b:
-        b.write(upData)
-    pageURL = pageRes.json()["next"]
+checkPage(mainData, headers, pageURL)
+
+upData = json.dumps(mainData, indent=2)
+with open(f"{playlistID}.json", "w") as b:
+    b.write(upData)
 
 getS(playlistID)
