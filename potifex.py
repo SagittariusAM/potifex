@@ -1,7 +1,5 @@
-import requests
 from bs4 import *
 import base64
-import json
 from datafex import *
 
 url = "https://accounts.spotify.com/api/token"
@@ -22,21 +20,41 @@ r = requests.post(url, headers=headers, data=data)
 
 token = r.json()['access_token']
 
-playlistID = input("Input Playlist ID:-")
-playlistURL = f"https://api.spotify.com/v1/playlists/{playlistID}"
-
 headers = {
     "Authorization": "Bearer " + token
 }
 
-mainData = requests.get(url=playlistURL, headers=headers).json()
+print("You can type PATH to change download folder.")
+while True:
+    with open("data\History.json", "r") as h:
+        history = json.load(h)
+    print("Recently Played:")
+    no = 0
+    recent_searches = [0]
+    reversed_history = dict(reversed(list(history.items())))
+    for pid in reversed_history:
+        no += 1
+        name = reversed_history[pid]
+        pageURL = f"https://api.spotify.com/v1/playlists/{pid}"
+        no_of_songs = countPages(headers, pageURL)
+        songs_added = no_of_songs - len(DownloadedList[pid])
+        print(f"  {no}- {pid}: {name}, {no_of_songs} Songs (+{songs_added} Added)")
+        recent_searches.append(pid)
+        if len(recent_searches) >= 6: break
 
-pageURL = mainData["tracks"]["next"]
+    playlistID = input("Input Playlist ID or choose from Recents:-")
 
-checkPage(mainData, headers, pageURL)
+    if playlistID.upper() == "PATH": PATH = input("Set a new download directory:-")
+    else: pass
 
-upData = json.dumps(mainData, indent=2)
-with open(f"{playlistID}.json", "w") as b:
-    b.write(upData)
+    try: playlistID = int(playlistID)
 
-getS(playlistID)
+    except: pass
+
+    else: playlistID = recent_searches[playlistID]
+
+    finally: 
+        playlist_data = getFromSpotify(headers, playlistID)
+        addToHistory(playlistID, playlist_data["name"], history)
+        getFromYouTube(playlistID, playlist_data)
+    # except Exception as err: print("\u001b[")

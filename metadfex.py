@@ -6,6 +6,7 @@ from lyricsgenius import Genius
 from mutagen.mp3 import MP3
 from mutagen.id3 import ID3, TIT2, TPE1, TS2, APIC, USLT, TALB, TRCK, TPE2, TS2
 
+PATH = "C:/Users/lenovo/Music/iTunes/iTunes Media/Automatically Add to iTunes"
 
 def switchToALAC(name):
     os.system("ffmpeg -i %s.m4a-c:a alac %s.alac" %(name, name))
@@ -75,7 +76,7 @@ def metadata(song, outS):
     recentSong.save()
 
 def moveSong(outS):
-    shutil.move(f'{outS}.mp3', f'C:/Users/lenovo/Music/iTunes/iTunes Media/Automatically Add to iTunes/{outS}.mp3')
+    shutil.move(f'{outS}.mp3', f'{PATH}/{outS}.mp3')
     print("\nMoved to iTunes")
 
 def askLyrics(recentSong, song):

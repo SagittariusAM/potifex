@@ -19,13 +19,24 @@ class Song:
         self.track = sData["track"]["track_number"]
         self.imageURL = sData["track"]["album"]["images"][0]["url"]
 
-with open("DownloadedList.json", "r") as b:
+with open("data\DownloadedList.json", "r") as b:
     DownloadedList = json.load(b)
 
+def getFromSpotify(headers, playlistID):
+    pageURL = f"https://api.spotify.com/v1/playlists/{playlistID}"
+    while pageURL:
+        pageRes = requests.get(url=pageURL, headers=headers).json()
+        try:
+            for item in pageRes.json()["items"]:
+                (pageRes["tracks"]["items"]).append(item)
+            pageURL = pageRes.json()["next"]
+        except:
+            pageURL = pageRes.json()["tracks"]["next"]
+    # upData = json.dumps(mainData, indent=2)
+    return pageRes
+
 # Main function: Gets each song and assigns its attributes.
-def getS(thestuff):
-    with open(f'{thestuff}.json', 'r') as f:
-        datafex = json.load(f)
+def getFromYouTube(thestuff, datafex):
     for dictn in datafex["tracks"]["items"]:
         song = Song(dictn, datafex)
         fullTitle = f"{song.name} - {song.artist}"
@@ -82,9 +93,23 @@ def listingS(fullTitle):
     with open("DownloadedList.json", "w") as b:
         b.write(upData)
 
-# Check for more pages and adds them to main json file.
-def checkPage(mainData, headers, pageURL):
+def countPages(headers, pageURL):
+    tracks = 0
     while pageURL:
-        pageRes = requests.get(url=pageURL, headers=headers)
-        for item in pageRes.json()["items"]: (mainData["tracks"]["items"]).append(item)
-        pageURL = pageRes.json()["next"]
+        pageRes = requests.get(url=pageURL, headers=headers).json()
+        try:
+            for item in pageRes.json()["items"]: tracks += 1
+            pageURL = pageRes.json()["next"]
+        except:
+            for item in pageRes.json()["tracks"]["items"]: tracks += 1
+            pageURL = pageRes.json()["tracks"]["next"]
+    return tracks
+
+def addToHistory(playlistid, playlist_name, history_doc):
+    try: del history_doc[playlistid]
+    except KeyError: pass
+    finally: 
+        history_doc[playlistid] = playlist_name
+        history = json.dumps(history_doc, indent=2)
+        with open("data\history.json", "w") as h:
+            h.write(history)
